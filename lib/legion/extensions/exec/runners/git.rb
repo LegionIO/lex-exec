@@ -21,7 +21,7 @@ module Legion
             Runners::Shell.execute(command: "git commit -m '#{safe_msg}'", cwd: path)
           end
 
-          def push(path:, remote: 'origin', branch: 'master', set_upstream: false, **)
+          def push(path:, remote: 'origin', branch: 'main', set_upstream: false, **)
             cmd = set_upstream ? "git push -u #{remote} #{branch}" : 'git push'
             Runners::Shell.execute(command: cmd, cwd: path)
           end
