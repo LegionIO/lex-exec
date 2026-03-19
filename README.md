@@ -191,11 +191,6 @@ lex-exec (Bundler.exec_rubocop)     # lints code, returns offense count
 lex-exec (Git.commit + Git.push)    # commits and pushes validated extension
 ```
 
-## Known Issues
-
-- `Git.create_repo` defaults `branch: 'master'` but `gh repo create` defaults to `main`. Pass `branch: 'main'` explicitly.
-- No runtime gem dependencies (stdlib `open3` and `timeout` only). The `gh` CLI must be installed separately for `create_repo`.
-
 ## Development
 
 ```bash
