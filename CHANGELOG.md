@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-03-20
+
+### Added
+- `Helpers::Worktree` for git worktree creation, removal, and listing
+- `Helpers::Checkpoint` for hidden-ref-based state snapshots and restore
+
 ## [0.1.1] - 2026-03-18
 
 ### Fixed
