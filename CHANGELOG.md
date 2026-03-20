@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3] - 2026-03-20
+
+### Fixed
+- Gemspec missing `spec.files` declaration — gem build previously produced an empty gem with no files
+- Entry point missing `require_relative` for `Helpers::Checkpoint` and `Helpers::Worktree`
+
 ## [0.1.2] - 2026-03-20
 
 ### Added
