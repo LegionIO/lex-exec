@@ -9,8 +9,8 @@
 Legion Extension that provides sandboxed shell execution within a LegionIO cluster. Runs shell commands, git operations, and bundler workflows with allowlist enforcement and a thread-safe in-memory audit log. Used by agentic swarm pipelines (e.g., `lex-swarm-github`) to validate and publish generated extensions.
 
 **GitHub**: https://github.com/LegionIO/lex-exec
-**License**: Apache-2.0
-**Version**: 0.1.1
+**License**: MIT
+**Version**: 0.1.3
 
 ## Architecture
 
@@ -36,10 +36,10 @@ No explicit actors directory. The framework auto-generates subscription actors f
 |-------|-------|
 | Gem name | `lex-exec` |
 | Module | `Legion::Extensions::Exec` |
-| Version | `0.1.1` |
+| Version | `0.1.3` |
 | Ruby | `>= 3.4` |
 | Runtime deps | `open3`, `timeout` (stdlib only) |
-| License | Apache-2.0 |
+| License | MIT |
 
 ## File Structure
 
