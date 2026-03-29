@@ -6,11 +6,11 @@
 
 ## Purpose
 
-Legion Extension that provides sandboxed shell execution within a LegionIO cluster. Runs shell commands, git operations, and bundler workflows with allowlist enforcement and a thread-safe in-memory audit log. Used by agentic swarm pipelines (e.g., `lex-swarm-github`) to validate and publish generated extensions.
+Legion Extension that provides sandboxed shell execution within a LegionIO cluster. Runs shell commands, git operations, and bundler workflows with allowlist enforcement and a thread-safe in-memory audit log. Also provides git worktree management and hidden-ref-based state checkpoints. Used by agentic swarm pipelines (e.g., `lex-swarm-github`) to validate and publish generated extensions.
 
 **GitHub**: https://github.com/LegionIO/lex-exec
 **License**: MIT
-**Version**: 0.1.3
+**Version**: 0.1.4
 
 ## Architecture
 
@@ -24,7 +24,9 @@ Legion::Extensions::Exec
 │   ├── Sandbox      # allowlist check, blocked pattern check
 │   ├── AuditLog     # thread-safe ring buffer (1000 entries max)
 │   ├── ResultParser # parses RSpec and RuboCop stdout into structured hashes
-│   └── Constants    # ALLOWED_COMMANDS array, BLOCKED_PATTERNS array
+│   ├── Constants    # ALLOWED_COMMANDS array, BLOCKED_PATTERNS array
+│   ├── Worktree     # git worktree create, remove, list (stored under .legion-worktrees/)
+│   └── Checkpoint   # hidden-ref snapshots: save, restore, list_checkpoints, prune
 └── Client           # includes Shell + Git + Bundler; stores base_path
 ```
 
@@ -36,9 +38,9 @@ No explicit actors directory. The framework auto-generates subscription actors f
 |-------|-------|
 | Gem name | `lex-exec` |
 | Module | `Legion::Extensions::Exec` |
-| Version | `0.1.3` |
+| Version | `0.1.4` |
 | Ruby | `>= 3.4` |
-| Runtime deps | `open3`, `timeout` (stdlib only) |
+| Runtime deps | `open3`, `timeout`, `fileutils` (stdlib only) |
 | License | MIT |
 
 ## File Structure
@@ -58,7 +60,9 @@ lex-exec/
 │               │   ├── sandbox.rb             # Allowlist + blocked pattern enforcement
 │               │   ├── audit_log.rb           # Thread-safe ring buffer (1000 entries)
 │               │   ├── result_parser.rb       # Parses RSpec/RuboCop stdout into structured hashes
-│               │   └── constants.rb           # ALLOWED_COMMANDS and BLOCKED_PATTERNS
+│               │   ├── constants.rb           # ALLOWED_COMMANDS and BLOCKED_PATTERNS
+│               │   ├── worktree.rb            # Git worktree lifecycle management
+│               │   └── checkpoint.rb          # Hidden-ref state snapshots
 │               └── runners/
 │                   ├── shell.rb               # execute, audit
 │                   ├── git.rb                 # init, add, commit, push, status, create_repo
@@ -135,6 +139,29 @@ Always rejected regardless of allowlist:
 | `exec_rspec(path:, format: 'progress')` | `result[:parsed]` => `{ examples:, failures:, pending:, passed: }` |
 | `exec_rubocop(path:, autocorrect: false)` | `result[:parsed]` => `{ offenses:, files_inspected: }` |
 
+## Helpers
+
+### Worktree (`Helpers::Worktree`)
+
+Class-method API for git worktrees. Worktrees are placed under `settings[:worktree][:base_dir]` or `.legion-worktrees/` in the current directory.
+
+| Method | Returns |
+|--------|---------|
+| `create(task_id:, branch: nil, base_ref: 'HEAD')` | `{ success:, path:, branch: }` |
+| `remove(task_id:)` | `{ success: }` |
+| `list` | `{ success:, worktrees: [{ path:, branch: }] }` |
+
+### Checkpoint (`Helpers::Checkpoint`)
+
+Hidden-ref snapshots using `refs/checkpoints/<task_id>/<label>`. Does not create real commits on any branch.
+
+| Method | Returns |
+|--------|---------|
+| `save(worktree_path:, label:, task_id:)` | `{ success:, ref:, commit: }` |
+| `restore(worktree_path:, label:, task_id:)` | `{ success:, ref: }` |
+| `list_checkpoints(task_id:)` | `{ success:, checkpoints: [{ label:, created_at: }] }` |
+| `prune(task_id:)` | `{ success:, pruned: }` |
+
 ## Client
 
 `Client.new(base_path: '/path/to/project')` stores `@base_path`. All runner methods delegate to the corresponding `extend self` modules with `path: @base_path`.
@@ -148,7 +175,7 @@ Always rejected regardless of allowlist:
 
 ```bash
 bundle install
-bundle exec rspec     # 127 examples, 0 failures
+bundle exec rspec     # 127+ examples, 0 failures
 bundle exec rubocop   # 0 offenses
 ```
 
