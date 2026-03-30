@@ -135,7 +135,7 @@ RSpec.describe Legion::Extensions::Exec::Helpers::AuditLog do
 
   describe 'thread safety' do
     it 'handles concurrent writes without data corruption' do
-      threads = 10.times.map do |i|
+      threads = Array.new(10) do |i|
         Thread.new { record_entry(command: "cmd_#{i}") }
       end
       threads.each(&:join)

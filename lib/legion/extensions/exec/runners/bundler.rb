@@ -4,7 +4,7 @@ module Legion
   module Extensions
     module Exec
       module Runners
-        module Bundler
+        module Bundler # rubocop:disable Legion/Extension/RunnerIncludeHelpers
           module_function
 
           def install(path:, **)
@@ -17,7 +17,7 @@ module Legion
               cwd:     path,
               timeout: 300_000
             )
-            return result unless result[:stdout] || result[:stderr]
+            return result unless result[:stdout] || result[:stderr] # rubocop:disable Legion/Extension/RunnerReturnHash
 
             raw     = result[:stdout] || result[:stderr] || ''
             parsed  = Helpers::ResultParser.parse_rspec(raw)
@@ -27,7 +27,7 @@ module Legion
           def exec_rubocop(path:, autocorrect: false, **)
             cmd    = autocorrect ? 'bundle exec rubocop -A' : 'bundle exec rubocop'
             result = Runners::Shell.execute(command: cmd, cwd: path, timeout: 120_000)
-            return result unless result[:stdout]
+            return result unless result[:stdout] # rubocop:disable Legion/Extension/RunnerReturnHash
 
             parsed = Helpers::ResultParser.parse_rubocop(result[:stdout] || '')
             result.merge(parsed: parsed)

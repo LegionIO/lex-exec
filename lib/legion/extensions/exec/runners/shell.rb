@@ -21,7 +21,7 @@ module Legion
               stdout, stderr, status = Timeout.timeout(timeout_secs) do
                 Open3.capture3(env, command, chdir: cwd)
               end
-            rescue Timeout::Error
+            rescue Timeout::Error => _e
               return { success: false, error: :timeout, timeout_ms: timeout }
             rescue ArgumentError => e
               return { success: false, error: e.message }
@@ -41,7 +41,7 @@ module Legion
             audit_log.record(command: command, cwd: cwd, exit_code: exit_code,
                              duration_ms: duration_ms, truncated: truncated)
 
-            Legion::Logging.debug("[lex-exec] exit=#{exit_code} duration=#{duration_ms}ms cmd=#{command}")
+            Legion::Logging.debug("[lex-exec] exit=#{exit_code} duration=#{duration_ms}ms cmd=#{command}") # rubocop:disable Legion/HelperMigration/DirectLogging
 
             {
               success:     exit_code.zero?,
