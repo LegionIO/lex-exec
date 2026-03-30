@@ -16,7 +16,7 @@ require_relative 'exec/client'
 module Legion
   module Extensions
     module Exec
-      extend Legion::Extensions::Core if Legion::Extensions.const_defined? :Core
+      extend Legion::Extensions::Core if Legion::Extensions.const_defined? :Core, false
     end
   end
 end

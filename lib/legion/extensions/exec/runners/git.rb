@@ -4,7 +4,7 @@ module Legion
   module Extensions
     module Exec
       module Runners
-        module Git
+        module Git # rubocop:disable Legion/Extension/RunnerIncludeHelpers
           module_function
 
           def init(path:, **)
@@ -28,7 +28,7 @@ module Legion
 
           def status(path:, **)
             result = Runners::Shell.execute(command: 'git status --porcelain', cwd: path)
-            return result unless result[:success]
+            return result unless result[:success] # rubocop:disable Legion/Extension/RunnerReturnHash
 
             parsed = Helpers::ResultParser.parse_git_status(result[:stdout] || '')
             result.merge(parsed: parsed)
