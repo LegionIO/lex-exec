@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5] - 2026-03-29
+
+### Changed
+- All runner methods (`Bundler`, `Shell`, `Git`) accept `**` for task system payload compatibility
+
+### Fixed
+- Checkpoint spec: use `File::NULL` and `git add -f file.rb` to bypass global gitignore, fixing flaky restore spec on macOS
+
 ## [0.1.4] - 2026-03-22
 
 ### Changed
