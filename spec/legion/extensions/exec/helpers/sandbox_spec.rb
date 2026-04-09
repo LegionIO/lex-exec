@@ -169,14 +169,14 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Sandbox do
         expect(result[:allowed]).to be true
       end
 
-      it 'allows python commands' do
+      it 'rejects bare python (unversioned)' do
         result = sandbox.allowed?('python -c "print(1)"')
-        expect(result[:allowed]).to be true
+        expect(result[:allowed]).to be false
       end
 
-      it 'allows pip commands' do
+      it 'rejects bare pip (unversioned)' do
         result = sandbox.allowed?('pip list')
-        expect(result[:allowed]).to be true
+        expect(result[:allowed]).to be false
       end
     end
 

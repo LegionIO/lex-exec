@@ -75,9 +75,7 @@ module Legion
 
             command
               .sub(/\Apython3(\s|\z)/, "#{python}\\1")
-              .sub(/\Apython(\s|\z)/,  "#{python}\\1")
               .sub(/\Apip3(\s|\z)/,    "#{pip}\\1")
-              .sub(/\Apip(\s|\z)/,     "#{pip}\\1")
           end
 
           def default_sandbox

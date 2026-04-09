@@ -126,7 +126,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Shell do
       before do
         allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_exists?).and_return(true)
         allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_python).and_return(venv_python)
-        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_pip).and_return("#{venv_dir}/bin/pip")
+        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_pip).and_return("#{venv_dir}/bin/pip3")
       end
 
       it 'rewrites python3 to venv path' do
@@ -138,7 +138,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Shell do
       it 'rewrites pip3 to venv path' do
         allow(Open3).to receive(:capture3).and_return(['', '', make_status(0)])
         runner.execute(command: 'pip3 install requests', cwd: '/tmp')
-        expect(Open3).to have_received(:capture3).with({}, "#{venv_dir}/bin/pip install requests", chdir: '/tmp')
+        expect(Open3).to have_received(:capture3).with({}, "#{venv_dir}/bin/pip3 install requests", chdir: '/tmp')
       end
 
       it 'does not rewrite non-python commands' do

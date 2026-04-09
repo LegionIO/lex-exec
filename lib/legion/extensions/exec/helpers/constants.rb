@@ -13,7 +13,7 @@ module Legion
 
           BASE_ALLOWED_COMMANDS = %w[
             bundle git gh ruby rspec rubocop ls cat mkdir cp mv rm touch echo wc head tail
-            python3 python pip3 pip
+            python3 pip3
           ].freeze
 
           ALLOWED_COMMANDS = BASE_ALLOWED_COMMANDS
@@ -38,7 +38,7 @@ module Legion
           end
 
           def venv_pip
-            "#{LEGION_PYTHON_VENV}/bin/pip"
+            "#{LEGION_PYTHON_VENV}/bin/pip3"
           end
 
           def venv_exists?
