@@ -9,7 +9,7 @@ module Legion
           MAX_TIMEOUT      = 600_000 # 10 minutes in ms
           MAX_OUTPUT_BYTES = 1_048_576 # 1 MB
 
-          LEGION_PYTHON_VENV = File.expand_path('~/.legionio/python').freeze
+          LEGION_PYTHON_VENV = (ENV['LEGION_PYTHON_VENV'] || File.expand_path('~/.legionio/python')).freeze
 
           BASE_ALLOWED_COMMANDS = %w[
             bundle git gh ruby rspec rubocop ls cat mkdir cp mv rm touch echo wc head tail
