@@ -14,7 +14,7 @@ module Legion
           def allowed?(command)
             base = base_command(command)
 
-            return { allowed: false, reason: "command '#{base}' is not in the allowlist" } unless @allowed_commands.include?(base)
+            return { allowed: false, reason: "command '#{base}' is not in the allowlist" } unless allowed_base?(base)
 
             @blocked_patterns.each do |pattern|
               return { allowed: false, reason: "command matches blocked pattern: #{pattern.source}" } if pattern.match?(command)
@@ -28,6 +28,15 @@ module Legion
           end
 
           private
+
+          # Match either the exact allowed string or just the basename of a full path.
+          # This lets the venv absolute path (e.g. ~/.legionio/python/bin/python3)
+          # and the bare name (python3) both pass the allowlist check.
+          def allowed_base?(base)
+            @allowed_commands.any? do |entry|
+              entry == base || File.basename(entry) == base || File.basename(base) == File.basename(entry)
+            end
+          end
 
           def base_command(command)
             command.strip.split(/\s+/).first.to_s
