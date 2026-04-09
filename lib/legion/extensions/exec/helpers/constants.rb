@@ -16,7 +16,12 @@ module Legion
             python3 pip3
           ].freeze
 
-          ALLOWED_COMMANDS = BASE_ALLOWED_COMMANDS
+          VENV_ALLOWED_COMMANDS = [
+            "#{LEGION_PYTHON_VENV}/bin/python3",
+            "#{LEGION_PYTHON_VENV}/bin/pip3"
+          ].freeze
+
+          ALLOWED_COMMANDS = (BASE_ALLOWED_COMMANDS + VENV_ALLOWED_COMMANDS).freeze
 
           BLOCKED_PATTERNS = [
             %r{rm\s+-rf\s+/},

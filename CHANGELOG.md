@@ -7,9 +7,6 @@
 - `python3`, `python`, `pip3`, `pip` added to sandbox allowlist
 - Runtime venv resolution via `Constants.venv_python`/`.venv_pip`/`.venv_exists?` (no longer frozen at load time)
 
-### Changed
-- Sandbox `allowed?` reverted to exact-match only (venv path rewriting handles translation in Shell runner)
-
 ## [0.1.6] - 2026-03-30
 
 ### Changed

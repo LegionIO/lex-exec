@@ -178,6 +178,18 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Sandbox do
         result = sandbox.allowed?('pip list')
         expect(result[:allowed]).to be false
       end
+
+      it 'allows absolute venv python commands' do
+        venv_python = "#{Legion::Extensions::Exec::Helpers::Constants::LEGION_PYTHON_VENV}/bin/python3"
+        result = sandbox.allowed?("#{venv_python} script.py")
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows absolute venv pip commands' do
+        venv_pip = "#{Legion::Extensions::Exec::Helpers::Constants::LEGION_PYTHON_VENV}/bin/pip3"
+        result = sandbox.allowed?("#{venv_pip} install requests")
+        expect(result[:allowed]).to be true
+      end
     end
 
     context 'with empty and edge case commands' do
