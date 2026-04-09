@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2026-04-09
+
+### Changed
+- `LEGION_PYTHON_VENV` constant reads `LEGION_PYTHON_VENV` env var first, falls back to `~/.legionio/python`
+
 ## [0.1.7] - 2026-04-09
 
 ### Added
