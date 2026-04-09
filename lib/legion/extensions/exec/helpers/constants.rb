@@ -9,22 +9,14 @@ module Legion
           MAX_TIMEOUT      = 600_000 # 10 minutes in ms
           MAX_OUTPUT_BYTES = 1_048_576 # 1 MB
 
-          # Resolve the Legion-managed Python venv interpreter and pip at runtime.
-          # Falls back to bare `python3` / `pip3` if the venv hasn't been created yet
-          # (e.g. during a fresh install before `legionio setup python` has run).
           LEGION_PYTHON_VENV = File.expand_path('~/.legionio/python').freeze
-          LEGION_PYTHON      = File.exist?("#{LEGION_PYTHON_VENV}/bin/python3") \
-                                 ? "#{LEGION_PYTHON_VENV}/bin/python3" \
-                                 : 'python3'
-          LEGION_PIP         = File.exist?("#{LEGION_PYTHON_VENV}/bin/pip") \
-                                 ? "#{LEGION_PYTHON_VENV}/bin/pip" \
-                                 : 'pip3'
 
-          ALLOWED_COMMANDS = (
-            %w[
-              bundle git gh ruby rspec rubocop ls cat mkdir cp mv rm touch echo wc head tail
-            ] + [LEGION_PYTHON, 'python3', LEGION_PIP, 'pip3']
-          ).uniq.freeze
+          BASE_ALLOWED_COMMANDS = %w[
+            bundle git gh ruby rspec rubocop ls cat mkdir cp mv rm touch echo wc head tail
+            python3 python pip3 pip
+          ].freeze
+
+          ALLOWED_COMMANDS = BASE_ALLOWED_COMMANDS
 
           BLOCKED_PATTERNS = [
             %r{rm\s+-rf\s+/},
@@ -38,6 +30,20 @@ module Legion
           ].freeze
 
           AUDIT_FIELDS = %i[command cwd exit_code duration_ms executed_at truncated].freeze
+
+          module_function
+
+          def venv_python
+            "#{LEGION_PYTHON_VENV}/bin/python3"
+          end
+
+          def venv_pip
+            "#{LEGION_PYTHON_VENV}/bin/pip"
+          end
+
+          def venv_exists?
+            File.exist?("#{LEGION_PYTHON_VENV}/pyvenv.cfg")
+          end
         end
       end
     end

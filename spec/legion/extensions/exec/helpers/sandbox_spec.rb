@@ -158,6 +158,28 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Sandbox do
       end
     end
 
+    context 'with python commands' do
+      it 'allows python3 commands' do
+        result = sandbox.allowed?('python3 script.py')
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows pip3 commands' do
+        result = sandbox.allowed?('pip3 install pandas')
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows python commands' do
+        result = sandbox.allowed?('python -c "print(1)"')
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows pip commands' do
+        result = sandbox.allowed?('pip list')
+        expect(result[:allowed]).to be true
+      end
+    end
+
     context 'with empty and edge case commands' do
       it 'rejects empty string' do
         result = sandbox.allowed?('')

@@ -68,11 +68,10 @@ module Legion
           # with the absolute venv paths — but only when the venv actually exists.
           # Full absolute paths that already point into the venv are left unchanged.
           def rewrite_python_command(command)
-            venv = Helpers::Constants::LEGION_PYTHON_VENV
-            return command unless File.exist?("#{venv}/pyvenv.cfg")
+            return command unless Helpers::Constants.venv_exists? # rubocop:disable Legion/Extension/RunnerReturnHash
 
-            python = Helpers::Constants::LEGION_PYTHON
-            pip    = Helpers::Constants::LEGION_PIP
+            python = Helpers::Constants.venv_python
+            pip    = Helpers::Constants.venv_pip
 
             command
               .sub(/\Apython3(\s|\z)/, "#{python}\\1")

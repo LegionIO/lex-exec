@@ -118,6 +118,49 @@ RSpec.describe Legion::Extensions::Exec::Runners::Shell do
     end
   end
 
+  describe 'python venv rewriting' do
+    let(:venv_dir) { Legion::Extensions::Exec::Helpers::Constants::LEGION_PYTHON_VENV }
+    let(:venv_python) { "#{venv_dir}/bin/python3" }
+
+    context 'when the venv exists' do
+      before do
+        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_exists?).and_return(true)
+        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_python).and_return(venv_python)
+        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_pip).and_return("#{venv_dir}/bin/pip")
+      end
+
+      it 'rewrites python3 to venv path' do
+        allow(Open3).to receive(:capture3).and_return(['', '', make_status(0)])
+        runner.execute(command: 'python3 script.py', cwd: '/tmp')
+        expect(Open3).to have_received(:capture3).with({}, "#{venv_python} script.py", chdir: '/tmp')
+      end
+
+      it 'rewrites pip3 to venv path' do
+        allow(Open3).to receive(:capture3).and_return(['', '', make_status(0)])
+        runner.execute(command: 'pip3 install requests', cwd: '/tmp')
+        expect(Open3).to have_received(:capture3).with({}, "#{venv_dir}/bin/pip install requests", chdir: '/tmp')
+      end
+
+      it 'does not rewrite non-python commands' do
+        allow(Open3).to receive(:capture3).and_return(['', '', make_status(0)])
+        runner.execute(command: 'git status', cwd: '/tmp')
+        expect(Open3).to have_received(:capture3).with({}, 'git status', chdir: '/tmp')
+      end
+    end
+
+    context 'when the venv does not exist' do
+      before do
+        allow(Legion::Extensions::Exec::Helpers::Constants).to receive(:venv_exists?).and_return(false)
+      end
+
+      it 'leaves python3 commands unchanged' do
+        allow(Open3).to receive(:capture3).and_return(['', '', make_status(0)])
+        runner.execute(command: 'python3 script.py', cwd: '/tmp')
+        expect(Open3).to have_received(:capture3).with({}, 'python3 script.py', chdir: '/tmp')
+      end
+    end
+  end
+
   describe '.audit' do
     it 'returns success: true' do
       result = runner.audit
