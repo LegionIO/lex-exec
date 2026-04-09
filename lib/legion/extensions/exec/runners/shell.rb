@@ -14,6 +14,11 @@ module Legion
             check = default_sandbox.allowed?(command)
             return { success: false, error: :blocked, reason: check[:reason] } unless check[:allowed]
 
+            # Rewrite bare `python3` / `python` / `pip3` / `pip` invocations to use
+            # the Legion-managed venv interpreter so scripts always run inside the
+            # correct environment with pre-installed packages (python-pptx, etc.).
+            command = rewrite_python_command(command)
+
             start_time = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
             timeout_secs = [timeout, Helpers::Constants::MAX_TIMEOUT].min / 1000.0
 
@@ -58,6 +63,20 @@ module Legion
           end
 
           private
+
+          # Replace bare `python3`, `python`, `pip3`, `pip` at the start of a command
+          # with the absolute venv paths — but only when the venv actually exists.
+          # Full absolute paths that already point into the venv are left unchanged.
+          def rewrite_python_command(command)
+            return command unless Helpers::Constants.venv_exists? # rubocop:disable Legion/Extension/RunnerReturnHash
+
+            python = Helpers::Constants.venv_python
+            pip    = Helpers::Constants.venv_pip
+
+            command
+              .sub(/\Apython3(\s|\z)/, "#{python}\\1")
+              .sub(/\Apip3(\s|\z)/,    "#{pip}\\1")
+          end
 
           def default_sandbox
             @default_sandbox ||= Helpers::Sandbox.new

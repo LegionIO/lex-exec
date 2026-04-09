@@ -158,6 +158,40 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Sandbox do
       end
     end
 
+    context 'with python commands' do
+      it 'allows python3 commands' do
+        result = sandbox.allowed?('python3 script.py')
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows pip3 commands' do
+        result = sandbox.allowed?('pip3 install pandas')
+        expect(result[:allowed]).to be true
+      end
+
+      it 'rejects bare python (unversioned)' do
+        result = sandbox.allowed?('python -c "print(1)"')
+        expect(result[:allowed]).to be false
+      end
+
+      it 'rejects bare pip (unversioned)' do
+        result = sandbox.allowed?('pip list')
+        expect(result[:allowed]).to be false
+      end
+
+      it 'allows absolute venv python commands' do
+        venv_python = "#{Legion::Extensions::Exec::Helpers::Constants::LEGION_PYTHON_VENV}/bin/python3"
+        result = sandbox.allowed?("#{venv_python} script.py")
+        expect(result[:allowed]).to be true
+      end
+
+      it 'allows absolute venv pip commands' do
+        venv_pip = "#{Legion::Extensions::Exec::Helpers::Constants::LEGION_PYTHON_VENV}/bin/pip3"
+        result = sandbox.allowed?("#{venv_pip} install requests")
+        expect(result[:allowed]).to be true
+      end
+    end
+
     context 'with empty and edge case commands' do
       it 'rejects empty string' do
         result = sandbox.allowed?('')
