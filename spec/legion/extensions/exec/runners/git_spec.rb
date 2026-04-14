@@ -151,4 +151,89 @@ RSpec.describe Legion::Extensions::Exec::Runners::Git do
       end
     end
   end
+
+  describe '.clone' do
+    before do
+      allow(Legion::Settings).to receive(:dig).with(:fleet, :git, :depth).and_return(nil)
+    end
+
+    it 'executes git clone with the given URL and destination' do
+      runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git clone https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
+        cwd:     Dir.pwd
+      )
+    end
+
+    it 'passes depth option for shallow clones' do
+      runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec', depth: 1)
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git clone --depth 1 https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
+        cwd:     Dir.pwd
+      )
+    end
+
+    it 'passes branch option' do
+      runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec', branch: 'main')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git clone --branch main https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
+        cwd:     Dir.pwd
+      )
+    end
+
+    it 'uses depth from settings when not explicitly passed' do
+      allow(Legion::Settings).to receive(:dig).with(:fleet, :git, :depth).and_return(3)
+      runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git clone --depth 3 https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
+        cwd:     Dir.pwd
+      )
+    end
+
+    it 'returns the shell result' do
+      result = runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec')
+      expect(result[:success]).to be true
+    end
+  end
+
+  describe '.fetch' do
+    it 'executes git fetch in the given path' do
+      runner.fetch(path: '/tmp/repos/lex-exec')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git fetch --all --prune',
+        cwd:     '/tmp/repos/lex-exec'
+      )
+    end
+
+    it 'passes remote when specified' do
+      runner.fetch(path: '/tmp/repos/lex-exec', remote: 'upstream')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git fetch upstream --prune',
+        cwd:     '/tmp/repos/lex-exec'
+      )
+    end
+
+    it 'returns the shell result' do
+      result = runner.fetch(path: '/tmp/repos/lex-exec')
+      expect(result[:success]).to be true
+    end
+  end
+
+  describe '.checkout' do
+    it 'checks out the specified ref' do
+      runner.checkout(path: '/tmp/repos/lex-exec', ref: 'main')
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git checkout main',
+        cwd:     '/tmp/repos/lex-exec'
+      )
+    end
+
+    it 'creates a new branch when create is true' do
+      runner.checkout(path: '/tmp/repos/lex-exec', ref: 'fleet/fix-issue-42', create: true)
+      expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
+        command: 'git checkout -b fleet/fix-issue-42',
+        cwd:     '/tmp/repos/lex-exec'
+      )
+    end
+  end
 end

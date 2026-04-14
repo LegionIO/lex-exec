@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.9] - 2026-04-13
+
+### Added
+- `Git.clone` — shallow/branched clone with depth read from `Legion::Settings.dig(:fleet, :git, :depth)`
+- `Git.fetch` — `git fetch --all --prune` or named remote
+- `Git.checkout` — checkout ref or create new branch with `-b`
+- `Worktree.create/remove/list` — `repo_path:` parameter passes `chdir:` to `Open3.capture3` for shared-worker correctness
+- `Helpers::RepoMaterializer` — strategy-based repo materialization (`materialize/release`); Phase 1 implements `:clone` strategy with `credential_provider` injection
+- `worktree_path` now checks `Legion::Settings.dig(:fleet, :workspace, :worktree_base)` before falling back to `:worktree, :base_dir`
+
 ## [0.1.8] - 2026-04-09
 
 ### Changed
