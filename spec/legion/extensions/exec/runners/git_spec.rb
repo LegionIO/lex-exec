@@ -161,7 +161,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Git do
       runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec')
       expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
         command: 'git clone https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
-        cwd:     nil
+        cwd:     Dir.pwd
       )
     end
 
@@ -169,7 +169,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Git do
       runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec', depth: 1)
       expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
         command: 'git clone --depth 1 https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
-        cwd:     nil
+        cwd:     Dir.pwd
       )
     end
 
@@ -177,7 +177,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Git do
       runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec', branch: 'main')
       expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
         command: 'git clone --branch main https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
-        cwd:     nil
+        cwd:     Dir.pwd
       )
     end
 
@@ -186,7 +186,7 @@ RSpec.describe Legion::Extensions::Exec::Runners::Git do
       runner.clone(url: 'https://github.com/LegionIO/lex-exec.git', path: '/tmp/repos/lex-exec')
       expect(Legion::Extensions::Exec::Runners::Shell).to have_received(:execute).with(
         command: 'git clone --depth 3 https://github.com/LegionIO/lex-exec.git /tmp/repos/lex-exec',
-        cwd:     nil
+        cwd:     Dir.pwd
       )
     end
 

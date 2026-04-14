@@ -73,6 +73,30 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Worktree do
     end
   end
 
+  describe 'invalid repo_path handling' do
+    it 'returns a structured failure from create when repo_path does not exist' do
+      result = described_class.create(task_id: 'bad-path-task', repo_path: '/nonexistent/repo/path')
+      expect(result[:success]).to be false
+      expect(result[:reason]).to eq(:invalid_repo_path)
+    end
+
+    it 'returns a structured failure from list when repo_path does not exist' do
+      result = described_class.list(repo_path: '/nonexistent/repo/path')
+      expect(result[:success]).to be false
+      expect(result[:reason]).to eq(:invalid_repo_path)
+    end
+  end
+
+  describe '.list exit status' do
+    it 'returns success false when git worktree list fails' do
+      status_double = instance_double(Process::Status, success?: false)
+      allow(Open3).to receive(:capture3).and_return(['', 'not a git repository', status_double])
+      result = described_class.list
+      expect(result[:success]).to be false
+      expect(result[:reason]).to eq(:git_error)
+    end
+  end
+
   describe 'repo_path support' do
     let(:mock_worktree_path) { '/tmp/test-worktrees/123' }
     let(:repo_path) { '/tmp/repos/my-repo' }

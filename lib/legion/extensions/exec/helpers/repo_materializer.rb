@@ -17,7 +17,8 @@ module Legion
             end
 
             def release(work_item:)
-              Helpers::Worktree.remove(task_id: work_item[:task_id])
+              repo_path = build_repo_path(work_item)
+              Helpers::Worktree.remove(task_id: work_item[:task_id], repo_path: repo_path)
             end
 
             private
@@ -33,7 +34,15 @@ module Legion
               repo_path = build_repo_path(work_item)
 
               clone_result = Runners::Git.clone(url: url, path: repo_path, depth: depth)
-              return { success: false, error: clone_result[:stderr] } unless clone_result[:success]
+              unless clone_result[:success]
+                return {
+                  success:      false,
+                  error:        clone_result[:stderr] || clone_result[:reason] || clone_result[:error],
+                  reason:       clone_result[:reason],
+                  stderr:       clone_result[:stderr],
+                  clone_result: clone_result
+                }
+              end
 
               worktree_result = Helpers::Worktree.create(
                 task_id:   work_item[:task_id],
@@ -47,7 +56,12 @@ module Legion
             end
 
             def apply_credentials(url, credential_provider)
-              credential_provider ? credential_provider.call(url) : url
+              return url unless credential_provider
+
+              result = credential_provider.call(url)
+              raise ArgumentError, 'credential_provider must return a non-empty String URL' unless result.is_a?(String) && !result.empty?
+
+              result
             end
 
             def build_repo_path(work_item)

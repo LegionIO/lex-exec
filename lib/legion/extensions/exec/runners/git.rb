@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 module Legion
   module Extensions
     module Exec
@@ -47,19 +49,19 @@ module Legion
             resolved_depth ||= Legion::Settings.dig(:fleet, :git, :depth) if defined?(Legion::Settings)
             args = ['git clone']
             args << "--depth #{resolved_depth}" if resolved_depth
-            args << "--branch #{branch}" if branch
-            args << url << path
-            Runners::Shell.execute(command: args.join(' '), cwd: nil)
+            args << "--branch #{Shellwords.shellescape(branch)}" if branch
+            args << Shellwords.shellescape(url) << Shellwords.shellescape(path)
+            Runners::Shell.execute(command: args.join(' '), cwd: Dir.pwd)
           end
 
           def fetch(path:, remote: nil, **)
-            cmd = remote ? "git fetch #{remote} --prune" : 'git fetch --all --prune'
+            cmd = remote ? "git fetch #{Shellwords.shellescape(remote)} --prune" : 'git fetch --all --prune'
             Runners::Shell.execute(command: cmd, cwd: path)
           end
 
           def checkout(path:, ref:, create: false, **)
             flag = create ? ' -b' : ''
-            Runners::Shell.execute(command: "git checkout#{flag} #{ref}", cwd: path)
+            Runners::Shell.execute(command: "git checkout#{flag} #{Shellwords.shellescape(ref)}", cwd: path)
           end
         end
       end

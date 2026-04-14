@@ -56,6 +56,21 @@ RSpec.describe Legion::Extensions::Exec::Helpers::RepoMaterializer do
       expect(result[:success]).to be false
     end
 
+    it 'propagates reason and stderr from clone failure' do
+      allow(Legion::Extensions::Exec::Runners::Git).to receive(:clone)
+        .and_return({ success: false, error: :timeout, reason: :timeout, stderr: nil })
+      result = described_class.materialize(work_item: work_item)
+      expect(result[:success]).to be false
+      expect(result[:reason]).to eq(:timeout)
+      expect(result[:clone_result]).to be_a(Hash)
+    end
+
+    it 'raises when credential_provider returns nil' do
+      bad_provider = ->(_url) {}
+      expect { described_class.materialize(work_item: work_item, credential_provider: bad_provider) }
+        .to raise_error(ArgumentError, /non-empty String/)
+    end
+
     it 'passes depth from settings to clone' do
       allow(Legion::Settings).to receive(:dig).with(:fleet, :git, :depth).and_return(5)
       described_class.materialize(work_item: work_item)
@@ -75,10 +90,11 @@ RSpec.describe Legion::Extensions::Exec::Helpers::RepoMaterializer do
   end
 
   describe '.release' do
-    it 'removes the worktree for the given task' do
+    it 'removes the worktree for the given task with repo_path' do
       described_class.release(work_item: work_item)
       expect(Legion::Extensions::Exec::Helpers::Worktree).to have_received(:remove).with(
-        task_id: 'task-abc'
+        task_id:   'task-abc',
+        repo_path: anything
       )
     end
 

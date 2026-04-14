@@ -23,6 +23,8 @@ module Legion
               else
                 { success: false, reason: :git_error, message: stderr.strip }
               end
+            rescue Errno::ENOENT => e
+              { success: false, reason: :invalid_repo_path, message: e.message }
             end
 
             def remove(task_id:, repo_path: nil)
@@ -37,14 +39,22 @@ module Legion
               else
                 { success: false, reason: :git_error, message: stderr.strip }
               end
+            rescue Errno::ENOENT => e
+              { success: false, reason: :invalid_repo_path, message: e.message }
             end
 
             def list(repo_path: nil)
               args = ['git', 'worktree', 'list', '--porcelain']
               opts = repo_path ? { chdir: repo_path } : {}
-              stdout, _stderr, _status = Open3.capture3(*args, **opts)
-              worktrees = parse_worktree_list(stdout)
-              { success: true, worktrees: worktrees }
+              stdout, stderr, status = Open3.capture3(*args, **opts)
+              if status.success?
+                worktrees = parse_worktree_list(stdout)
+                { success: true, worktrees: worktrees }
+              else
+                { success: false, reason: :git_error, message: stderr.strip }
+              end
+            rescue Errno::ENOENT => e
+              { success: false, reason: :invalid_repo_path, message: e.message }
             end
 
             def worktree_path(task_id)
