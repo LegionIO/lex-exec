@@ -23,7 +23,7 @@ module Legion
               else
                 { success: false, reason: :git_error, message: stderr.strip }
               end
-            rescue Errno::ENOENT => e
+            rescue Errno::ENOENT, Errno::ENOTDIR, Errno::EACCES => e
               { success: false, reason: :invalid_repo_path, message: e.message }
             end
 
@@ -39,7 +39,7 @@ module Legion
               else
                 { success: false, reason: :git_error, message: stderr.strip }
               end
-            rescue Errno::ENOENT => e
+            rescue Errno::ENOENT, Errno::ENOTDIR, Errno::EACCES => e
               { success: false, reason: :invalid_repo_path, message: e.message }
             end
 
@@ -53,7 +53,7 @@ module Legion
               else
                 { success: false, reason: :git_error, message: stderr.strip }
               end
-            rescue Errno::ENOENT => e
+            rescue Errno::ENOENT, Errno::ENOTDIR, Errno::EACCES => e
               { success: false, reason: :invalid_repo_path, message: e.message }
             end
 

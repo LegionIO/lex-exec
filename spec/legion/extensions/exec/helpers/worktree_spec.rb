@@ -85,6 +85,44 @@ RSpec.describe Legion::Extensions::Exec::Helpers::Worktree do
       expect(result[:success]).to be false
       expect(result[:reason]).to eq(:invalid_repo_path)
     end
+
+    context 'when Open3.capture3 raises Errno::ENOTDIR' do
+      before do
+        allow(described_class).to receive(:worktree_path).and_return('/tmp/wt/task-enotdir')
+        allow(Dir).to receive(:exist?).with('/tmp/wt/task-enotdir').and_return(false)
+        allow(FileUtils).to receive(:mkdir_p)
+        allow(Open3).to receive(:capture3).and_raise(Errno::ENOTDIR, 'not a directory')
+      end
+
+      it 'returns structured failure from create' do
+        result = described_class.create(task_id: 'task-enotdir', repo_path: '/tmp/not-a-dir/repo')
+        expect(result[:success]).to be false
+        expect(result[:reason]).to eq(:invalid_repo_path)
+      end
+    end
+
+    context 'when Open3.capture3 raises Errno::EACCES' do
+      before do
+        allow(described_class).to receive(:worktree_path).and_return('/tmp/wt/task-eacces')
+        allow(Dir).to receive(:exist?).with('/tmp/wt/task-eacces').and_return(false)
+        allow(FileUtils).to receive(:mkdir_p)
+        allow(Open3).to receive(:capture3).and_raise(Errno::EACCES, 'permission denied')
+      end
+
+      it 'returns structured failure from create' do
+        result = described_class.create(task_id: 'task-eacces', repo_path: '/tmp/no-access/repo')
+        expect(result[:success]).to be false
+        expect(result[:reason]).to eq(:invalid_repo_path)
+      end
+
+      it 'returns structured failure from list' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Open3).to receive(:capture3).and_raise(Errno::EACCES, 'permission denied')
+        result = described_class.list(repo_path: '/tmp/no-access/repo')
+        expect(result[:success]).to be false
+        expect(result[:reason]).to eq(:invalid_repo_path)
+      end
+    end
   end
 
   describe '.list exit status' do

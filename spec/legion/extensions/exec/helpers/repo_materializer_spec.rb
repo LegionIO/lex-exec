@@ -87,6 +87,19 @@ RSpec.describe Legion::Extensions::Exec::Helpers::RepoMaterializer do
         hash_including(repo_path: anything)
       )
     end
+
+    it 'creates parent directories before cloning' do
+      allow(FileUtils).to receive(:mkdir_p)
+      described_class.materialize(work_item: work_item)
+      expect(FileUtils).to have_received(:mkdir_p).with(a_string_ending_with('task-abc'))
+    end
+
+    it 'returns failure when mkdir_p raises' do
+      allow(FileUtils).to receive(:mkdir_p).and_raise(Errno::EACCES, 'permission denied')
+      result = described_class.materialize(work_item: work_item)
+      expect(result[:success]).to be false
+      expect(result[:reason]).to eq(:mkdir_failed)
+    end
   end
 
   describe '.release' do

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+
 module Legion
   module Extensions
     module Exec
@@ -32,6 +34,12 @@ module Legion
               url = apply_credentials(work_item[:repo_url], credential_provider)
               depth = Legion::Settings.dig(:fleet, :git, :depth) if defined?(Legion::Settings)
               repo_path = build_repo_path(work_item)
+
+              begin
+                ::FileUtils.mkdir_p(::File.dirname(repo_path))
+              rescue StandardError => e
+                return { success: false, reason: :mkdir_failed, error: e.message }
+              end
 
               clone_result = Runners::Git.clone(url: url, path: repo_path, depth: depth)
               unless clone_result[:success]
