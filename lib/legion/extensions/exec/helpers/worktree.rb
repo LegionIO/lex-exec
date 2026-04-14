@@ -9,13 +9,15 @@ module Legion
       module Helpers
         module Worktree
           class << self
-            def create(task_id:, branch: nil, base_ref: 'HEAD')
+            def create(task_id:, branch: nil, base_ref: 'HEAD', repo_path: nil)
               branch ||= "legion/#{task_id}"
               path = worktree_path(task_id)
               return { success: false, reason: :already_exists } if Dir.exist?(path)
 
               FileUtils.mkdir_p(File.dirname(path))
-              _stdout, stderr, status = Open3.capture3('git', 'worktree', 'add', path, '-b', branch, base_ref)
+              args = ['git', 'worktree', 'add', path, '-b', branch, base_ref]
+              opts = repo_path ? { chdir: repo_path } : {}
+              _stdout, stderr, status = Open3.capture3(*args, **opts)
               if status.success?
                 { success: true, path: path, branch: branch }
               else
@@ -23,11 +25,13 @@ module Legion
               end
             end
 
-            def remove(task_id:)
+            def remove(task_id:, repo_path: nil)
               path = worktree_path(task_id)
               return { success: false, reason: :not_found } unless Dir.exist?(path)
 
-              _stdout, stderr, status = Open3.capture3('git', 'worktree', 'remove', path, '--force')
+              args = ['git', 'worktree', 'remove', path, '--force']
+              opts = repo_path ? { chdir: repo_path } : {}
+              _stdout, stderr, status = Open3.capture3(*args, **opts)
               if status.success?
                 { success: true }
               else
@@ -35,14 +39,19 @@ module Legion
               end
             end
 
-            def list
-              stdout, _stderr, _status = Open3.capture3('git', 'worktree', 'list', '--porcelain')
+            def list(repo_path: nil)
+              args = ['git', 'worktree', 'list', '--porcelain']
+              opts = repo_path ? { chdir: repo_path } : {}
+              stdout, _stderr, _status = Open3.capture3(*args, **opts)
               worktrees = parse_worktree_list(stdout)
               { success: true, worktrees: worktrees }
             end
 
             def worktree_path(task_id)
-              base = Legion::Settings.dig(:worktree, :base_dir) if defined?(Legion::Settings)
+              base = if defined?(Legion::Settings)
+                       Legion::Settings.dig(:fleet, :workspace, :worktree_base) ||
+                         Legion::Settings.dig(:worktree, :base_dir)
+                     end
               File.join(base || File.join(Dir.pwd, '.legion-worktrees'), task_id.to_s)
             end
 

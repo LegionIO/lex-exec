@@ -41,6 +41,26 @@ module Legion
               cwd:     Dir.pwd
             )
           end
+
+          def clone(url:, path:, depth: nil, branch: nil, **)
+            resolved_depth = depth
+            resolved_depth ||= Legion::Settings.dig(:fleet, :git, :depth) if defined?(Legion::Settings)
+            args = ['git clone']
+            args << "--depth #{resolved_depth}" if resolved_depth
+            args << "--branch #{branch}" if branch
+            args << url << path
+            Runners::Shell.execute(command: args.join(' '), cwd: nil)
+          end
+
+          def fetch(path:, remote: nil, **)
+            cmd = remote ? "git fetch #{remote} --prune" : 'git fetch --all --prune'
+            Runners::Shell.execute(command: cmd, cwd: path)
+          end
+
+          def checkout(path:, ref:, create: false, **)
+            flag = create ? ' -b' : ''
+            Runners::Shell.execute(command: "git checkout#{flag} #{ref}", cwd: path)
+          end
         end
       end
     end
